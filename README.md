@@ -65,6 +65,50 @@ Take your SD card, put it into the Raspberry Pi, and connect it to power and a
 screen. You'll see a welcome message printed, and you'll get an LED blinking
 once per second. Tada!
 
+Status
+------
+
+An OS is a huge undertaking, and there are lots of milestones to reach before
+you can really claim to have an OS. Here are the things I currently have
+accomplished.
+
+- [x] Console interface
+- [x] Simple printf formatting
+
+Some things that are on the horizon:
+
+- [ ] Support more format specifiers.
+- [ ] USB keyboard input
+- [ ] Read from SD card
+- [ ] FAT32 filesystem implementation
+
+This would get me to my first milestone. Here is the current set of milestones
+that I have in mind:
+
+1. A minimal shell that supports keyboard input. Basic utilities to explore the
+   file system (probably read-only). Future features will be exposed as commands
+   until I have the ability to create an init process.
+2. The ability to enter "user-mode" and run something. This will require me to
+   figure out the MMU and how I will manage memory for processes (even though
+   process won't actually exist yet).
+3. A real "process" abstraction, complete with a system call interface and a few
+   system calls. At this point, the process code will likely be copied from the
+   kernel image into the user-mode memory space, rather than trying to support
+   ELF.
+4. A real "file" abstraction, with an implementation that supports the console.
+   At this point, a process should be able to read and write to the console as
+   its "stdin" and "stdout".
+5. Some sort of scheduling system (brain-dead simple first). The important thing
+   is to be able to set time slices, run the process in a time slice, and then
+   transition back into kernel-mode in order to schedule something else.
+6. Some form of interrupt handling that respects processes. This way, the USB
+   driver could use interrupts to get input.
+7. A real user-mode shell as init!
+8. Process management system calls so that you can create a new process.
+9. ELF support? Some sort of format for storing executables.
+
+Like I said, this is a truly long-term project.
+
 License
 -------
 
