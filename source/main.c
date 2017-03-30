@@ -3,6 +3,9 @@
  */
 #include "pi.h"
 
+#define MILLIS * 1000
+#define SECS * 1000 MILLIS
+
 /**
  * Blink the ACT LED with a given time interval.
  */
@@ -19,7 +22,7 @@ void blink(uint32_t interval) {
  * "Handles" errors by blinking the ACT LED very quickly.
  */
 void error(void) {
-	blink(50000);
+	blink(50 MILLIS);
 }
 
 /**
@@ -41,5 +44,5 @@ int main() {
 	}
 
 	printf("main = 0x%x\n", main);
-	blink(500000); // slow blink is not error
+	blink(500 MILLIS); // slow blink is not error
 }
