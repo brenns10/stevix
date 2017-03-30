@@ -23,7 +23,11 @@ wordcpy:
   .unreq n
 
 /*
-  Set n bytes (words) starting at src.
+  Set the words pointed by dest to have value val, for n bytes. The value is a
+  word, and so the addresses (and n) have to be word aligned.
+r0: dest
+r1: val
+r2: n
 */
   .globl wordset
 wordset:

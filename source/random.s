@@ -1,4 +1,10 @@
   .globl random
+/*
+  Completely unmodified prng from Baking Pi.
+r0: Previous random number.
+Returns:
+r0: Next random number.
+*/
 random:
   xnm .req r0
   a .req r1

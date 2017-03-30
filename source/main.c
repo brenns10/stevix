@@ -4,32 +4,42 @@
 #include "pi.h"
 
 /**
- * "Handles" errors by turning on the ACT led, and then looping forever.
+ * Blink the ACT LED with a given time interval.
  */
-void error(void) {
-	set_gpio(16, 0);
+void blink(uint32_t interval) {
 	while (1) {
-		// infinite loop
+		set_gpio(16, 0);
+		wait(interval, 0);
+		set_gpio(16, 1);
+		wait(interval, 0);
 	}
 }
 
 /**
- * Main entry point of the program - called by _start in init.s.
- *
- * This program pseudo-randomly draws lines across the screen.
+ * "Handles" errors by blinking the ACT LED very quickly.
+ */
+void error(void) {
+	blink(50000);
+}
+
+/**
+ * Main entry point of the program - called by _start in init.s. It is safe to
+ * return from main: the _start stub will infinitely loop on return.
  */
 int main() {
+	struct tag *tag = 0;
 	set_gpio_function(16, 1);
 	init_console(1920, 1080);
-	put_string("hello, world\n");
-	put_string("this is my first use ");
-	put_string("of the console.\n");
-	put_string("it is not likely to be successful.\n");
 
-	while (1) {
-		put_string("Now I will alternate between...\n");
-		wait(250000, 0);
-		put_string("These two lines so I can test scroll...\n");
-		wait(250000, 0);
+	puts("Welcome to Stevix, by Stephen Brennan\n");
+
+	tag = find_tag(9);
+	if (tag) {
+		puts("Boot command line: ");
+		puts((char*)tag->data);
+		puts("\n");
 	}
+
+	printf("main = 0x%x\n", main);
+	blink(500000); // slow blink is not error
 }

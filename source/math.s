@@ -1,5 +1,5 @@
 /*
-  division!
+  Division. Currently, this doesn't seem to work. Will revisit.
 r0: dividend
 r1: divisor
   returns
@@ -37,6 +37,11 @@ $divide_u32_return:
   .unreq remainder
   .unreq shift
 
+/*
+  Calls to these functions are emitted by the C compiler for the / operator and
+  the % operator. I have implemented them (they would normally be included in
+  a standard library of sorts) for my own convenience.
+*/
   .globl __aeabi_uidiv
 __aeabi_uidiv:
   b divide_u32
