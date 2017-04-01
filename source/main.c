@@ -43,14 +43,13 @@ int main() {
 		puts("\n");
 	}
 
-	printf("main = 0x%x\n", main);
+	printf("%s = 0x%x\n", "main", main);
 
-	// test buffer overrun protection
-	char smallbuf[23];
-	snprintf(smallbuf, sizeof(smallbuf),
-	         "buffer overruns kill %x people each year", 120);
-	puts(smallbuf);
-	puts("\nthanks for that PSA!\n");
+	uint32_t dividend = 45;
+	uint32_t divisor = 0;
+	while (++divisor <= dividend)
+		printf("%u / %u = %u, r %u\n", dividend, divisor,
+		       dividend / divisor, dividend % divisor);
 
 	blink(500 MILLIS); // slow blink is not error
 }

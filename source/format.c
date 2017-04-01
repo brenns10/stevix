@@ -48,6 +48,26 @@ static inline uint32_t _format_hex(char *buf, uint32_t size, uint32_t out,
 }
 
 /**
+ * Implements the %u format specifier.
+ */
+static inline uint32_t _format_uint(char *buf, uint32_t size, uint32_t out,
+                                    uint32_t val)
+{
+	uint8_t tmp[10]; // max base 10 digits for 32-bit int
+	uint32_t tmpIdx = 0, rem;
+	do {
+		rem = val % 10; // should do uidivmod, only one call
+		val = val / 10;
+		tmp[tmpIdx++] = rem;
+	} while(val);
+	do {
+		tmpIdx--;
+		SET(buf, size, out, '0' + tmp[tmpIdx]);
+	} while (tmpIdx > 0);
+	return out;
+}
+
+/**
  * Implements the %s format specifier.
  */
 static inline uint32_t _format_str(char *buf, uint32_t size, uint32_t out,
@@ -101,6 +121,10 @@ uint32_t vsnprintf(char *buf, uint32_t size, const char *format, va_list vl)
 			case 's':
 				strval = va_arg(vl, char *);
 				out = _format_str(buf, size, out, strval);
+				break;
+			case 'u':
+				uintval = va_arg(vl, uint32_t);
+				out = _format_uint(buf, size, out, uintval);
 				break;
 			case '%':
 				SET(buf, size, out, '%');
