@@ -5,6 +5,32 @@
 #include "pi.h"
 
 /**
+ * This macro assigns a value to the buffer at the given index. It increments
+ * the index after assigning the value. However, it does two critical things
+ * so that we don't have to think about it in the rest of the logic of the
+ * function.
+ *
+ * First, it NULL-checks the buffer, because it is possible to call sprintf with
+ * a NULL buffer (if, for example, you want to know how much space a formatted
+ * string would occupy). If the buffer is NULL, the index is still incremented,
+ * but no assignment occurs.
+ *
+ * Second, it checks if the position is past the last writable position in the
+ * buffer. If at the end of the string, it will properly nul-terminate it.
+ * Otherwise, no assignment occurs. Regardless, the index is still incremented.
+ */
+#define SET(buf, size, out, value)                                      \
+	do {                                                            \
+		if (buf) {                                              \
+			if (out < size - 1)                             \
+				buf[out] = value;                       \
+			else if (out == size - 1)                       \
+				buf[out] = '\0';                        \
+		}                                                       \
+		out++;                                                  \
+	} while (0);
+
+/**
  * This function implements the %x format specifier.
  * @buf: Pointer to the output buffer.
  * @size: Size of the output buffer.
@@ -18,20 +44,18 @@ uint32_t _snprintf_hex(char *buf, uint32_t size, uint32_t out, uint32_t val)
 	uint32_t shift = 32;
 	uint32_t digit;
 	uint32_t started = 0;
+	char c;
 
 	do {
 		shift -= 4;
 		digit = (val & mask) >> shift;
 
-		// If statement ensures we only print the rightmost digits.
+		// If statement ensures we skip leading zeros.
 		// I'm still debating if this is useful.
 		if (digit || started || shift == 0) {
 			started = 1;
-			if (digit >= 10) {
-				buf[out++] = 'a' + digit - 10;
-			} else {
-				buf[out++] = '0' + digit;
-			}
+			c = (digit >= 10 ? 'a' + digit - 10 : '0' + digit);
+			SET(buf, size, out, c);
 		}
 		mask >>= 4;
 	} while (shift > 0);
@@ -64,26 +88,35 @@ uint32_t vsnprintf(char *buf, uint32_t size, const char *format, va_list vl)
 	for (uint16_t in = 0; format[in]; in++) {
 		if (format[in] == '%') {
 			in++;
+
+			// when string ends with %, copy it literally
 			if (!format[in]) {
-				buf[out++] = '%';
-				buf[out++] = '\0';
-				return out;
+				SET(buf, size, out, '%');
+				goto nul_ret;
 			}
+
+			// otherwise, handle format specifiers
 			switch (format[in]) {
 			case 'x':
 				uintval = va_arg(vl, uint32_t);
 				out = _snprintf_hex(buf, size, out, uintval);
 				break;
+			case '%':
+				SET(buf, size, out, '%');
+				break;
 			default:
-				buf[out++] = '%';
-				buf[out++] = format[in];
+				// default is to copy the unrecognized specifier
+				// that may not be a great idea...
+				SET(buf, size, out, '%');
+				SET(buf, size, out, format[in]);
 			}
 
 		} else {
-			buf[out++] = format[in];
+			SET(buf, size, out, format[in]);
 		}
 	}
-	buf[out++] = '\0';
+nul_ret:
+	SET(buf, size, out, '\0');
 	return out;
 }
 
@@ -118,7 +151,7 @@ uint32_t snprintf(char *buf, uint32_t size, const char *format, ...)
  */
 uint32_t printf(const char *format, ...)
 {
-	char buf[512];
+	char buf[1024];
 	uint32_t res;
 	va_list vl;
 	va_start(vl, format);
