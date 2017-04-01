@@ -6,39 +6,24 @@
 
 /**
  * This macro assigns a value to the buffer at the given index. It increments
- * the index after assigning the value. However, it does two critical things
- * so that we don't have to think about it in the rest of the logic of the
- * function.
- *
- * First, it NULL-checks the buffer, because it is possible to call sprintf with
- * a NULL buffer (if, for example, you want to know how much space a formatted
- * string would occupy). If the buffer is NULL, the index is still incremented,
- * but no assignment occurs.
- *
- * Second, it checks if the position is past the last writable position in the
- * buffer. If at the end of the string, it will properly nul-terminate it.
- * Otherwise, no assignment occurs. Regardless, the index is still incremented.
+ * the index after assigning the value. However, it takes care of bounds checks
+ * so that we don't have to constantly think about them. It also "automatically"
+ * nul-terminates the string if we hit the end of the buffer.
  */
 #define SET(buf, size, out, value)                                      \
 	do {                                                            \
-		if (buf) {                                              \
-			if (out < size - 1)                             \
-				buf[out] = value;                       \
-			else if (out == size - 1)                       \
-				buf[out] = '\0';                        \
-		}                                                       \
+		if (out < size - 1)                                     \
+			buf[out] = value;                               \
+		else if (out == size - 1)                               \
+			buf[out] = '\0';                                \
 		out++;                                                  \
 	} while (0);
 
 /**
  * This function implements the %x format specifier.
- * @buf: Pointer to the output buffer.
- * @size: Size of the output buffer.
- * @out: Current index into the output buffer.
- * @val: Value to format as hexadecimal.
- * @return: New index into the output buffer.
  */
-uint32_t _snprintf_hex(char *buf, uint32_t size, uint32_t out, uint32_t val)
+static inline uint32_t _format_hex(char *buf, uint32_t size, uint32_t out,
+                                   uint32_t val)
 {
 	uint32_t mask = 0xF0000000;
 	uint32_t shift = 32;
@@ -63,16 +48,27 @@ uint32_t _snprintf_hex(char *buf, uint32_t size, uint32_t out, uint32_t val)
 }
 
 /**
+ * Implements the %s format specifier.
+ */
+static inline uint32_t _format_str(char *buf, uint32_t size, uint32_t out,
+                                   char *val)
+{
+	for (; *val; val++) {
+		SET(buf, size, out, *val);
+	}
+	return out;
+}
+
+/**
  * This is the fundamental formatting function, although it is not the one users
  * will call frequently. The v means that it takes a va_list directly, which is
- * useful for sharing code across variadic functions. The sn means that it will
- * write to a buffer (the buffer length protection is not completely implemented
- * yet).
+ * useful for sharing code across variadic functions. The s means that it will
+ * write to a buffer. The n means that it will not write past the given buffer
+ * size.
  *
- * Currently, there is only one format specifier, %x for hex unsigned 32 bit
- * integers. Eventually there will be support for %d, %u, and %s. I have no plan
- * to support the full range of format specification - things like specifying
- * width of fields and prefix characters.
+ * Supports a minimal subset of standard C format language. Format specifiers
+ * may only be a single character: field widths, padding bytes, etc, may not be
+ * specified in this implementation. Available format specifiers: %x, %s
  *
  * @buf: Where to write the output
  * @size: Size of the output buffer
@@ -84,6 +80,7 @@ uint32_t vsnprintf(char *buf, uint32_t size, const char *format, va_list vl)
 {
 	uint32_t out = 0;
 	uint32_t uintval;
+	char *strval;
 
 	for (uint16_t in = 0; format[in]; in++) {
 		if (format[in] == '%') {
@@ -99,7 +96,11 @@ uint32_t vsnprintf(char *buf, uint32_t size, const char *format, va_list vl)
 			switch (format[in]) {
 			case 'x':
 				uintval = va_arg(vl, uint32_t);
-				out = _snprintf_hex(buf, size, out, uintval);
+				out = _format_hex(buf, size, out, uintval);
+				break;
+			case 's':
+				strval = va_arg(vl, char *);
+				out = _format_str(buf, size, out, strval);
 				break;
 			case '%':
 				SET(buf, size, out, '%');
@@ -117,7 +118,7 @@ uint32_t vsnprintf(char *buf, uint32_t size, const char *format, va_list vl)
 	}
 nul_ret:
 	SET(buf, size, out, '\0');
-	return out;
+	return out - 1; // final count does not include nul-terminator
 }
 
 /**
