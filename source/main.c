@@ -44,5 +44,13 @@ int main() {
 	}
 
 	printf("main = 0x%x\n", main);
+
+	// test buffer overrun protection
+	char smallbuf[23];
+	snprintf(smallbuf, sizeof(smallbuf),
+	         "buffer overruns kill %x people each year", 120);
+	puts(smallbuf);
+	puts("\nthanks for that PSA!\n");
+
 	blink(500 MILLIS); // slow blink is not error
 }
