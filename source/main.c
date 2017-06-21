@@ -2,6 +2,7 @@
  * main.c: contains the main() function
  */
 #include "pi.h"
+#include "serial.h"
 
 #define MILLIS * 1000
 #define SECS * 1000 MILLIS
@@ -33,7 +34,7 @@ void alpha(void)
 	uint8_t ch;
 	for (;;)
 		for (ch = 'A'; ch <= 'Z'; ch++)
-			send_byte(ch);
+			serial_send(ch);
 }
 
 /**
@@ -43,6 +44,6 @@ void alpha(void)
 int main() {
 	set_gpio_function(16, 1);
 	set_gpio(16, 0);
-	init_serial();
+	serial_init();
 	alpha();
 }

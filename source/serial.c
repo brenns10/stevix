@@ -1,17 +1,9 @@
 /**
  * serial.c: contains serial interface code
  */
-#include "pi.h"
+#include "serial.h"
 
-#define set_u32(address, value) *(uint32_t *)address = (uint32_t)value
-#define set_u16(address, value) *(uint16_t *)address = (uint16_t)value
-#define set_u8(address, value) *(uint8_t *)address = (uint8_t)value
-
-#define get_u32(address) (*(uint32_t*)address)
-#define get_u16(address) (*(uint16_t*)address)
-#define get_u8(address) (*(uint8_t*)address)
-
-void init_serial(void)
+void serial_miniuart_init(void)
 {
 	/* set function of GPIO 14, 15 to be alternative 5 (Mini UART) */
 	set_gpio_function(14, 2);
@@ -38,19 +30,74 @@ void init_serial(void)
 	set_u32(AUX_MU_CNTL_REG, 2);
 }
 
-#define TX_READY (get_u32(AUX_MU_LSR_REG) & (1 << 5))
-
-void send_byte(uint8_t byte)
+void serial_pl011_init(void)
 {
-	/* wait until we can send a byte */
-	while (!TX_READY);
-	set_u8(AUX_MU_IO_REG, byte);
+	/* set function of GPIO 14, 15 to alternative 0 (PL011 UART) */
+	set_gpio_function(14, 4);
+	set_gpio_function(14, 4);
+
+	/* word length = 8bit, enable fifo, no parity, etc */
+	set_u32(PL011_LCRH, 0x70);
+
+	/* set baud rate to 115200
+	 * According to BCM2835 Peripherals datasheet, this is the formula for
+	 * the baud rate divisor:
+	 *   UART Reference Clock / (16 * 115200) = 1.6276
+	 * YOU MUST SET THESE THINGS IN config.txt!
+	 * With that set, the ibrd and fbrd can be computed:
+	 *   integer part = 1
+	 * According to "ARM PrimeCell UART (PL011) Revision: r1p5 Technical
+	 * Reference Manual" page 2-11, the fractional part should be 6 bits, or
+	 * out of 64. So:
+	 *   fractional part = 40 (ish)
+	 */
+	set_u32(PL011_IBRD, 1);
+	set_u32(PL011_FBRD, 40);
+
+	/* mask out all the interrupts */
+	set_u32(PL011_IMSC, 0x7F2);
+
+	/* enable rx, tx, and of course enable UART0 */
+	set_u32(PL011_CR, 0x301);
 }
 
-#define RX_READY (get_u32(AUX_MU_LSR_REG) & 1)
-
-uint8_t recv_byte(void)
+/**
+ * Send a whole buffer of bytes.
+ */
+void serial_send_buffer(uint8_t *buffer, uint32_t nbytes)
 {
-	while (!RX_READY);
-	return get_u8(AUX_MU_IO_REG);
+	uint32_t i;
+	for (i = 0; i < nbytes; i++) {
+		serial_send(buffer[i]);
+	}
+}
+
+/**
+ * Receive nbytes from serial, placing them into buffer.
+ */
+void serial_recv_buffer(uint8_t *buffer, uint32_t nbytes)
+{
+	uint32_t i;
+	for (i = 0; i < nbytes; i++) {
+		buffer[i] = serial_recv();
+	}
+}
+
+/**
+ * Receive a line into a user-provided buffer. Returns once CRLF has been read,
+ * or when the buffer has become full.
+ */
+void serial_recv_line(char *buffer, uint32_t nbytes)
+{
+	uint32_t i;
+	for (i = 0; i < nbytes - 1; i++) {
+		buffer[i] = serial_recv();
+		if (buffer[i] == '\r') {
+			serial_recv(); // probably going to be \n :P
+			buffer[i] = '\0';
+			return;
+		}
+	}
+	buffer[i] = '\0'; // nul-terminate just in case
+	return;
 }
