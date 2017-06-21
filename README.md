@@ -3,47 +3,21 @@ stevix*
 
 *\*it doesn't work as well with my name as it did with Linus*
 
-A **very** long term project: build a simple operating system for a Raspberry
-Pi. Inspired in part by TempleOS. My initial resource is Alex
-Chadwick's [Baking Pi][] article series.
-
-The Long Description
---------------------
-
-I'm fascinated with how things work, and once I know how one thing works, I just
-want to learn the next lower level of abstraction. Since I've been doing
-OS-level work recently, operating systems have been on my mind. Recent news
-brought TempleOS back to my attention, and inspired me to determine how I could
-make my own minimal operating system.
-
-The trouble is that making normal PC OS's has a huge scope. There are so very
-many devices you would have to support, and so much "IBM PC" legacy to deal
-with. I don't particularly care to spend all of my time on that - I'd rather
-support a limited set of devices on one platform, so I can focus on what matters
-to me: implementing the parts of an operating system.
-
-Enter the Raspberry Pi. It has a standard set of hardware, it is available on
-the cheap. It also uses ARM, a RISC architecture which is attractive to me. So
-the Raspberry Pi provides the limited hardware scope I'm looking for in this
-project.
+This is a long term project in which I hope to build a simple operating system
+for the Raspberry Pi.
 
 Setup
 -----
 
-I'm using a Raspberry Pi 1, Model B. I would expect that things won't work quite
-the same on other models (especially things like GPIO - you'll probably need to
-alter some pins and memory addresses).
+Prereqs:
 
-You'll need a SD card. The partition table should be MBR, and it should have one
-primary partition formatted to FAT32 (the partition type should be C, "W95 Fat32
-(LBA)"). The filesystem should contain at least: `bootcode.bin` and `start.elf`,
-which are necessary firmware that you can get from [here][rpi-firmware] (`boot`
-directory). You'll also want a `config.txt` file, where you can specify to the
-firmware some settings (for me, I disabled HDMI overscan). [Here][rpi-config] is
-some documentation on that file and what it can contain.
-
-Your computer needs an ARM GCC cross compiler. Mine is `arm-none-eabi-gcc` on
-Arch Linux.
+- Raspberry Pi 1, Model B. It may work on other models, with some effort.
+- USB serial cable. I use [this][usb-serial]. See [here][dwelch67] for info on
+  cables and how to connect.
+- An SD card, with MBR partition table, 1 partition (type C), formatted to
+  FAT32.
+- Firmware from [here][rpi-firmware]: `bootcode.bin` and `start.elf`
+- A config file (`config.txt`), copied from this repo
 
 With all of those prereqs, you can now do:
 
@@ -61,9 +35,15 @@ $ sudo cp kernel.img /mnt
 $ sudo umount /mnt
 ```
 
-Take your SD card, put it into the Raspberry Pi, and connect it to power and a
-screen. You'll see a welcome message printed, and you'll get an LED blinking
-once per second. Tada!
+Next, put the SD card in the Raspberry Pi. Plug the serial cable into your
+computer and the Pi, and start `picocom`:
+
+```bash
+$ picocom -c -b 115200 /dev/ttyUSB0
+```
+
+Connect the Pi to power and you should see the version, command line, and a
+silly REPL!
 
 Status
 ------
@@ -72,14 +52,19 @@ An OS is a huge undertaking, and there are lots of milestones to reach before
 you can really claim to have an OS. Here are the things I currently have
 accomplished.
 
-- [x] Console interface
-- [x] Simple printf formatting
+- [x] Simple HDMI framebuffer, with line drawing
+- [x] Framebuffer console output
+- [x] Serial input/output, on both the Mini UART and PL011 UART
+- [x] Simple printf formatting for either serial or framebuffer
 
 Some things that are on the horizon:
 
-- [ ] Support more format specifiers.
-- [ ] USB keyboard input
-- [ ] Read from SD card
+- [ ] Support more format specifiers in string formatting (not a very high
+  priority right now)
+- [ ] Process abstraction, with time slices and scheduling. No memory
+  protections yet. Separate stack.
+- [ ] Memory segmentation
+- [ ] USB keyboard input (a major undertaking)
 - [ ] FAT32 filesystem implementation
 
 This would get me to my first milestone. Here is the current set of milestones
@@ -109,13 +94,19 @@ that I have in mind:
 
 Like I said, this is a truly long-term project.
 
-License
--------
+License, Credits
+----------------
 
-Some of this code is heavily based on [Baking Pi][], and this is released under
-a CC-BY-SA license. As a result, I believe this must also be CC-BY-SA. At some
-point I may check with the author to see if I can't do GPL or something.
+There are a lot of great resources that have helped me:
+- [Baking Pi][]
+- [dwelch67's collection of bare-metal examples][dwelch67]
+- [BCM2835 perpiherals datasheet](http://www.cl.cam.ac.uk/projects/raspberrypi/tutorials/os/downloads/SoC-Peripherals.pdf)
+- [PrimeCell UART (PL011) datasheet](http://infocenter.arm.com/help/topic/com.arm.doc.ddi0183g/DDI0183G_uart_pl011_r1p5_trm.pdf)
+
+I'd like to release this under Revised BSD, as per usual.
 
 [Baking Pi]: http://www.cl.cam.ac.uk/projects/raspberrypi/tutorials/os/index.html
 [rpi-firmware]: https://github.com/raspberrypi/firmware
 [rpi-config]: https://www.raspberrypi.org/documentation/configuration/config-txt/README.md
+[usb-serial]: https://www.amazon.com/dp/B00QT7LQ88/ref=cm_sw_r_cp_dp_T1_86QszbEMXM81N
+[dwelch67]: https://github.com/dwelch67/raspberrypi
