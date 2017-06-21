@@ -49,14 +49,14 @@ void serial_miniuart_init(void)
 	set_u32(AUX_MU_BAUD_REG, 270);
 
 	/* finally, enable rx and tx */
-	set_u32(AUX_MU_CNTL_REG, 2);
+	set_u32(AUX_MU_CNTL_REG, 3);
 }
 
 void serial_pl011_init(void)
 {
 	/* set function of GPIO 14, 15 to alternative 0 (PL011 UART) */
 	set_gpio_function(14, 4);
-	set_gpio_function(14, 4);
+	set_gpio_function(15, 4);
 
 	/* word length = 8bit, enable fifo, no parity, etc */
 	set_u32(PL011_LCRH, 0x70);

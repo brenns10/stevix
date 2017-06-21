@@ -69,7 +69,7 @@ void serial_recv_line(char *buffer, uint32_t nbytes);
 /* select which UART for serial */
 #define SERIAL_PL011
 
-#ifdef SERIAL_PL011 /* implementations for PL011 serial ***********************/
+#if defined(SERIAL_PL011) /* implementations for PL011 serial *****************/
 
 #define serial_init serial_pl011_init
 #define serial_tx_ready() (!(get_u32(PL011_FR) & (1 << 5))) /* not TXFE */
@@ -77,7 +77,7 @@ void serial_recv_line(char *buffer, uint32_t nbytes);
 #define serial_try_send(byte) set_u8(PL011_DR, byte)
 #define serial_try_recv(byte) get_u8(PL011_DR)
 
-#elif SERIAL_MINI_UART /* implementations for Mini UART ***********************/
+#elif defined(SERIAL_MINI_UART) /* implementations for Mini UART **************/
 
 #define serial_init serial_miniuart_init
 #define serial_tx_ready() (get_u32(AUX_MU_LSR_REG) & (1 << 5))
