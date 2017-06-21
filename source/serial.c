@@ -1,5 +1,27 @@
 /**
  * serial.c: contains serial interface code
+ *
+ * Settings
+ * ========
+ * Baud Rate: 115200
+ * Word Size: 8 bits
+ * Parity: None
+ * Stop bits: 1
+ * Flow control: None
+ * Local echo: Yes!
+ *
+ * This code automatically translates \n -> \r\n when sending it on the wire.
+ * This should be harmless if you send a string with \r\n (since it will become
+ * \r\r\n, which still only has one linefeed). The reason I do this is that my
+ * serial program (picocom) expects CRLF.
+ *
+ * Similarly, this code only expects a CR character when the user hits enter.
+ * This is again the behavior of picocom. Picocom may be configured differently,
+ * but I'd prefer to stick with the defaults where convenient.
+ *
+ * Here is my picocom command line:
+ *
+ * picocom -c -b 115200 /dev/ttyUSB0
  */
 #include "serial.h"
 
@@ -73,6 +95,19 @@ void serial_send_buffer(uint8_t *buffer, uint32_t nbytes)
 }
 
 /**
+ * Send a nul-terminated string (not the nul terminator, of course)
+ */
+void serial_puts(char *string)
+{
+	while (*string) {
+		/* translate \n to \r\n */
+		if (*string == '\n')
+			serial_send('\r');
+		serial_send(*string++);
+	}
+}
+
+/**
  * Receive nbytes from serial, placing them into buffer.
  */
 void serial_recv_buffer(uint8_t *buffer, uint32_t nbytes)
@@ -93,7 +128,6 @@ void serial_recv_line(char *buffer, uint32_t nbytes)
 	for (i = 0; i < nbytes - 1; i++) {
 		buffer[i] = serial_recv();
 		if (buffer[i] == '\r') {
-			serial_recv(); // probably going to be \n :P
 			buffer[i] = '\0';
 			return;
 		}

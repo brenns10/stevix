@@ -3,6 +3,7 @@
  */
 #include <stdarg.h>
 #include "pi.h"
+#include "serial.h" /* in case puts == serial_puts */
 
 /**
  * This macro assigns a value to the buffer at the given index. It increments

@@ -62,9 +62,9 @@
 void serial_miniuart_init(void);
 void serial_pl011_init(void);
 void serial_send_buffer(uint8_t *buffer, uint32_t nbytes);
+void serial_puts(char *string);
 void serial_recv_buffer(uint8_t *buffer, uint32_t nbytes);
 void serial_recv_line(char *buffer, uint32_t nbytes);
-#define serial_send_str(s) serial_send_buffer(s, sizeof(s) - 1)
 
 /* select which UART for serial */
 #define SERIAL_PL011

@@ -9,6 +9,18 @@
 #define _PI_H
 
 /*
+ * Conditionally defines the puts function. You can set this to:
+ * - serial_puts (serial)
+ * - console_puts (hdmi)
+ * You can only read input from serial, so the hdmi output isn't as helpful.
+ */
+#define puts serial_puts
+
+#define MAJOR 0
+#define MINOR 0
+#define PATCH 0
+
+/*
  * I prefer stdint types but I don't believe I can simply *use* them without the
  * compiler accidentally linking in some standard library. So here are the types
  * I'm using (explicitly).
@@ -86,7 +98,7 @@ extern uint32_t random(uint32_t last);
  * laying out strings. For more complex console output, there is printf.
  */
 void init_console(uint32_t width, uint32_t height);
-int puts(char *string);
+int console_puts(char *string);
 
 /*
  * Tags - parse tags (tags.c)

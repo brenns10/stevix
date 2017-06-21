@@ -167,7 +167,7 @@ void _put_string(char *string)
  * Print a string to the console. This will scroll the console if necessary. It
  * is the main public interface of the text.c module.
  */
-int puts(char *string)
+int console_puts(char *string)
 {
 	uint32_t scroll = _compute_scroll(string);
 	if (scroll) _scroll(scroll);
