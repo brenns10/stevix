@@ -26,30 +26,23 @@ void error(void) {
 }
 
 /**
+ * Constantly send the alphabet.
+ */
+void alpha(void)
+{
+	uint8_t ch;
+	for (;;)
+		for (ch = 'A'; ch <= 'Z'; ch++)
+			send_byte(ch);
+}
+
+/**
  * Main entry point of the program - called by _start in init.s. It is safe to
  * return from main: the _start stub will infinitely loop on return.
  */
 int main() {
-	struct tag *tag = 0;
 	set_gpio_function(16, 1);
-	init_console(1920, 1080);
-
-	puts("Welcome to Stevix, by Stephen Brennan\n");
-
-	tag = find_tag(9);
-	if (tag) {
-		puts("Boot command line: ");
-		puts((char*)tag->data);
-		puts("\n");
-	}
-
-	printf("%s = 0x%x\n", "main", main);
-
-	uint32_t dividend = 45;
-	uint32_t divisor = 0;
-	while (++divisor <= dividend)
-		printf("%u / %u = %u, r %u\n", dividend, divisor,
-		       dividend / divisor, dividend % divisor);
-
-	blink(500 MILLIS); // slow blink is not error
+	set_gpio(16, 0);
+	init_serial();
+	alpha();
 }
