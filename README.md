@@ -9,7 +9,7 @@ for the Raspberry Pi.
 Setup
 -----
 
-See [doc/Setup.md][doc/Setup.md].
+See [doc/Setup.md](doc/Setup.md).
 
 Status
 ------
