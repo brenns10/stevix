@@ -20,6 +20,8 @@
 #define MINOR 0
 #define PATCH 0
 
+#define NULL 0
+
 /*
  * I prefer stdint types but I don't believe I can simply *use* them without the
  * compiler accidentally linking in some standard library. So here are the types
@@ -32,10 +34,18 @@ typedef int int32_t;
 typedef short int16_t;
 typedef char int8_t;
 
+#define nelem(arr) (sizeof(arr) / sizeof(arr[0]))
+
 /*
  * System Info - defined in sysinfo.c
  */
-void sysinfo(void);
+int sysinfo(int argc, char *argv[]);
+
+/*
+ * Shell - defined in shell.c
+ * You can type exit any time you'd like, but you can never leave.
+ */
+void shell(void);
 
 /*
  * GPIO - defined in gpio.s

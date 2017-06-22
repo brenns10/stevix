@@ -27,6 +27,7 @@ SECTIONS {
 	*/
 	.data : {
 		*(.data)
+    *(COMMON)
 	}
   /*
   * And read-only data.

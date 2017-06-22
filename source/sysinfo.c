@@ -24,9 +24,11 @@
 	} while (0)
 
 
-void sysinfo(void)
+int sysinfo(int argc, char *argv[])
 {
 	uint32_t ra;
+	(void)argc;
+	(void)argv;
 	/* outputting values for registers documented at:
 	 * http://infocenter.arm.com/help/index.jsp?topic=/com.arm.doc.ddi0344k/Beidabib.html
 	 */

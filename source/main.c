@@ -62,16 +62,5 @@ int main() {
 		puts("No command line found???\n");
 	}
 
-	sysinfo();
-
-	puts("\nStevix shell. Configure your terminal program:\n"
-	     "1. Expect CRLF line endings on output.\n"
-	     "2. Send CR when Enter key pressed.\n"
-	     "3. Enable local echo.\n\n");
-
-	for (;;) {
-		puts("> "); /* printf with format string length 1 -> putchar */
-		serial_recv_line(buffer, sizeof(buffer));
-		printf("Your input: \"%s\"\n", buffer);
-	}
+	shell();
 }
