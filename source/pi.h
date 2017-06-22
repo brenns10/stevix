@@ -33,6 +33,11 @@ typedef short int16_t;
 typedef char int8_t;
 
 /*
+ * System Info - defined in sysinfo.c
+ */
+void sysinfo(void);
+
+/*
  * GPIO - defined in gpio.s
  * Can use this to set GPIO's to input/output, and then to turn them on/off.
  */

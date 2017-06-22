@@ -62,6 +62,8 @@ int main() {
 		puts("No command line found???\n");
 	}
 
+	sysinfo();
+
 	puts("\nStevix shell. Configure your terminal program:\n"
 	     "1. Expect CRLF line endings on output.\n"
 	     "2. Send CR when Enter key pressed.\n"
