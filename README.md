@@ -9,41 +9,7 @@ for the Raspberry Pi.
 Setup
 -----
 
-Prereqs:
-
-- Raspberry Pi 1, Model B. It may work on other models, with some effort.
-- USB serial cable. I use [this][usb-serial]. See [here][dwelch67] for info on
-  cables and how to connect.
-- An SD card, with MBR partition table, 1 partition (type C), formatted to
-  FAT32.
-- Firmware from [here][rpi-firmware]: `bootcode.bin` and `start.elf`
-- A config file (`config.txt`), copied from this repo
-
-With all of those prereqs, you can now do:
-
-```bash
-# Build kernel.img
-$ make
-
-# Mount the filesystem (replace sdc1 with your SD partition)
-$ sudo mount /dev/sdc1 /mnt
-
-# Copy kernel.img
-$ sudo cp kernel.img /mnt
-
-# Unmount
-$ sudo umount /mnt
-```
-
-Next, put the SD card in the Raspberry Pi. Plug the serial cable into your
-computer and the Pi, and start `picocom`:
-
-```bash
-$ picocom -c -b 115200 /dev/ttyUSB0
-```
-
-Connect the Pi to power and you should see the version, command line, and a
-silly REPL!
+See [doc/Setup.md][doc/Setup.md].
 
 Status
 ------
